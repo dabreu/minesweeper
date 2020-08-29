@@ -2,6 +2,10 @@ package com.minesweeper.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import com.minesweeper.service.BoardInfo;
 
 /**
  * 
@@ -64,9 +68,19 @@ public class Board {
      * @return
      */
     public Board setRedFlag(int row, int column) {
-        validateCanDoAction();
-        validatePosition(row, column);
-        getCell(row, column).setRedFlag();
+        validateAndExecute(row, column, cell -> cell.setRedFlag());
+        return this;
+    }
+
+    /**
+     * Removes a red flag on a cell given its position.
+     * 
+     * @param row
+     * @param column
+     * @return
+     */
+    public Board removeRedFlag(int row, int column) {
+        validateAndExecute(row, column, cell -> cell.removeRedFlag());
         return this;
     }
 
@@ -78,10 +92,35 @@ public class Board {
      * @return
      */
     public Board setQuestionMark(int row, int column) {
+        validateAndExecute(row, column, cell -> cell.setQuestionMark());
+        return this;
+    }
+
+    /**
+     * Removes a question mark on a cell given its position.
+     * 
+     * @param row
+     * @param column
+     * @return
+     */
+    public Board removeQuestionMark(int row, int column) {
+        validateAndExecute(row, column, cell -> cell.removeQuestionMark());
+        return this;
+    }
+
+    /**
+     * Executes the given action on the indicated cell, validating the action
+     * and the cell position
+     * 
+     * @param row
+     * @param column
+     * @param action
+     */
+    private void validateAndExecute(int row, int column, Consumer<Cell> action) {
         validateCanDoAction();
         validatePosition(row, column);
-        getCell(row, column).setQuestionMark();
-        return this;
+        Cell cell = getCell(row, column);
+        action.accept(cell);
     }
 
     /**
@@ -92,20 +131,22 @@ public class Board {
      */
     private void doUncover(CellPosition cellPosition) {
         Cell cell = getCell(cellPosition);
-        if (cell.isCovered()) {
+        if (cell.hasMine()) {
             cell.uncover();
-            cellsUncovered++;
-            if (!cell.hasAdjacentMines()) {
-                // if the cell has not adjacent mines, then propagate the
-                // uncover to its
-                // adjacent cells
-                getAdjacents(cellPosition).forEach(position -> doUncover(position));
+            finished = true;
+        } else {
+            if (cell.isCovered()) {
+                cell.uncover();
+                cellsUncovered++;
+                if (!cell.hasAdjacentMines()) {
+                    // if the cell has not adjacent mines, then propagate the
+                    // uncover to its adjacent cells
+                    getAdjacents(cellPosition).forEach(position -> doUncover(position));
+                }
             }
+            // the board is finished when all cells without mine are uncovered
+            finished = areAllCellsWithoutMineUncovered();
         }
-        // the board will be finished when a mine is found or all the cells
-        // without mine
-        // are uncovered
-        finished = (cell.hasMine() || areAllCellsWithoutMineUncovered());
     }
 
     /**
@@ -238,5 +279,12 @@ public class Board {
     public boolean areAllCellsWithoutMineUncovered() {
         int totalCellsWithoutMine = rows * columns - mines;
         return (cellsUncovered == totalCellsWithoutMine);
+    }
+
+    public BoardInfo toBoardInfo() {
+        BoardInfo boardInfo = new BoardInfo();
+        boardInfo.cells = cells.stream().map(row -> row.stream().map(cell -> cell.getInfo()).collect(Collectors.toList()))
+                .collect(Collectors.toList());
+        return boardInfo;
     }
 }

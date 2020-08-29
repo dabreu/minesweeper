@@ -1,6 +1,8 @@
 package com.minesweeper.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -14,8 +16,15 @@ import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
 
 import com.minesweeper.model.Game.Status;
+import com.minesweeper.service.GameInfo;
 
 public class GameTest {
+
+    @Test
+    public void testGameIdIsSetWhenCreated() {
+        Game game = new Game(5, 6, 10);
+        assertNotNull(game.getId());
+    }
 
     @Test
     public void testGameIsStartedWhenCreated() {
@@ -32,6 +41,17 @@ public class GameTest {
             };
         };
         assertEquals(LocalDateTime.parse(fixedNow), game.getStartTime());
+    }
+
+    @Test
+    public void testGameEndTimeIsNotSetWhenCreated() {
+        String fixedNow = "2020-08-27T22:00:00.00";
+        Game game = new Game(5, 6, 10) {
+            protected Clock getClock() {
+                return Clock.fixed(Instant.parse(fixedNow + "Z"), ZoneOffset.UTC);
+            };
+        };
+        assertNull(game.getEndTime());
     }
 
     @Test
@@ -117,6 +137,12 @@ public class GameTest {
     }
 
     @Test
+    public void testGetDurationReturnsValueOnStartedGame() {
+        Game game = new Game(4, 4, 5);
+        assertNotNull(game.getDuration());
+    }
+
+    @Test
     public void testSetRedFlagOnFinishedGameThrowsException() {
         Game game = new Game(4, 4, 3) {
             @Override
@@ -126,6 +152,20 @@ public class GameTest {
         };
         Exception exception = assertThrows(GameException.class, () -> {
             game.setRedFlag(2, 0);
+        });
+        assertTrue(exception.getMessage().contains("action not allowed, the game is finished"));
+    }
+
+    @Test
+    public void testRemoveRedFlagOnFinishedGameThrowsException() {
+        Game game = new Game(4, 4, 3) {
+            @Override
+            protected boolean isFinished() {
+                return true;
+            }
+        };
+        Exception exception = assertThrows(GameException.class, () -> {
+            game.removeRedFlag(2, 0);
         });
         assertTrue(exception.getMessage().contains("action not allowed, the game is finished"));
     }
@@ -142,5 +182,29 @@ public class GameTest {
             game.setQuestionMark(2, 0);
         });
         assertTrue(exception.getMessage().contains("action not allowed, the game is finished"));
+    }
+
+    @Test
+    public void testRemoveQuestionMarkOnFinishedGameThrowsException() {
+        Game game = new Game(4, 4, 3) {
+            @Override
+            protected boolean isFinished() {
+                return true;
+            }
+        };
+        Exception exception = assertThrows(GameException.class, () -> {
+            game.removeQuestionMark(2, 0);
+        });
+        assertTrue(exception.getMessage().contains("action not allowed, the game is finished"));
+    }
+
+    @Test
+    public void testGetInfoOnNewGame() {
+        Game game = new Game(3, 3, 1);
+        GameInfo gameInfo = game.toGameInfo();
+        assertNotNull(gameInfo.id);
+        assertEquals(Status.Started.name(), gameInfo.status);
+        assertNotNull(gameInfo.duration);
+        assertTrue(gameInfo.board.cells.stream().flatMap(aRow -> aRow.stream()).allMatch(value -> "C".equals(value)));
     }
 }

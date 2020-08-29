@@ -6,8 +6,22 @@ package com.minesweeper.model;
  */
 public class Cell {
 
+    public enum Code {
+        U, C, F, Q, M;
+    }
+
     public enum Status {
-        Uncovered, Covered, Flagged, QuestionMarked;
+        Uncovered(Code.U), Covered(Code.C), Flagged(Code.F), QuestionMarked(Code.Q);
+
+        private Code code;
+
+        private Status(Code code) {
+            this.code = code;
+        }
+
+        public String getCode() {
+            return code.name();
+        }
     }
 
     /** indicates whether the cell contains a mine **/
@@ -64,6 +78,13 @@ public class Cell {
         status = Status.Flagged;
     }
 
+    public void removeRedFlag() {
+        if (status != Status.Flagged) {
+            throw new CellException("cannot remove red flag on a cell without it");
+        }
+        status = Status.Covered;
+    }
+
     public void setQuestionMark() {
         if (!isCovered()) {
             throw new CellException("cannot add question mark on an uncovered cell");
@@ -71,4 +92,20 @@ public class Cell {
         status = Status.QuestionMarked;
     }
 
+    public void removeQuestionMark() {
+        if (status != Status.QuestionMarked) {
+            throw new CellException("cannot remove question mark on a cell without it");
+        }
+        status = Status.Covered;
+    }
+
+    public String getInfo() {
+        if (isCovered()) {
+            return status.getCode();
+        }
+        if (hasMine()) {
+            return Code.M.name();
+        }
+        return String.valueOf(adjacentMinesCounter);
+    }
 }

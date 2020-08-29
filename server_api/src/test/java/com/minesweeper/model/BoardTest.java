@@ -161,6 +161,14 @@ public class BoardTest {
     }
 
     @Test
+    public void testUncoverCellWithMineAdjacentDoesNotFinishTheBoard() {
+        Board board = getBoardWithFixedMines();
+        board.uncover(2, 1);
+        assertFalse(board.isFinished());
+        assertFalse(board.areAllCellsWithoutMineUncovered());
+    }
+
+    @Test
     public void testSetRedFlagOnFinishedBoardThrowsException() {
         Board board = new Board(4, 4, 3) {
             @Override
@@ -222,6 +230,34 @@ public class BoardTest {
             board.setQuestionMark(3, 50);
         });
         assertTrue(exception.getMessage().contains("invalid column"));
+    }
+
+    @Test
+    public void testRemoveRedFlagOnFinishedBoardThrowsException() {
+        Board board = new Board(4, 4, 3) {
+            @Override
+            public boolean isFinished() {
+                return true;
+            }
+        };
+        Exception exception = assertThrows(BoardException.class, () -> {
+            board.removeRedFlag(2, 0);
+        });
+        assertTrue(exception.getMessage().contains("action not allowed, the board is finished"));
+    }
+
+    @Test
+    public void testRemoveQuestionMarkOnFinishedBoardThrowsException() {
+        Board board = new Board(4, 4, 3) {
+            @Override
+            public boolean isFinished() {
+                return true;
+            }
+        };
+        Exception exception = assertThrows(BoardException.class, () -> {
+            board.removeQuestionMark(2, 0);
+        });
+        assertTrue(exception.getMessage().contains("action not allowed, the board is finished"));
     }
 
     private Board getBoardWithFixedMines() {

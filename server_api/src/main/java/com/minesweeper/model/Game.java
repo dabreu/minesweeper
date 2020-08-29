@@ -3,6 +3,10 @@ package com.minesweeper.model;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import com.minesweeper.service.GameInfo;
 
 /**
  * 
@@ -14,6 +18,8 @@ public class Game {
     public enum Status {
         Started, Won, Lost
     }
+
+    private UUID id;
 
     /** game's board **/
     private Board board;
@@ -28,6 +34,7 @@ public class Game {
     private LocalDateTime endTime;
 
     public Game(int rows, int columns, int mines) {
+        this.id = UUID.randomUUID();
         this.board = new Board(rows, columns, mines);
         this.status = Status.Started;
         this.startTime = LocalDateTime.now(getClock());
@@ -43,8 +50,7 @@ public class Game {
      * @return
      */
     public Game uncoverCell(int row, int column) {
-        validateCanDoAction();
-        getBoard().uncover(row, column);
+        validateAndExecute(row, column, board -> board.uncover(row, column));
         if (getBoard().isFinished()) {
             finishGame();
         }
@@ -62,8 +68,19 @@ public class Game {
      * @return
      */
     public Game setRedFlag(int row, int column) {
-        validateCanDoAction();
-        getBoard().setRedFlag(row, column);
+        validateAndExecute(row, column, board -> board.setRedFlag(row, column));
+        return this;
+    }
+
+    /**
+     * Removes a red flag from a cell
+     * 
+     * @param row
+     * @param column
+     * @return
+     */
+    public Game removeRedFlag(int row, int column) {
+        validateAndExecute(row, column, board -> board.removeRedFlag(row, column));
         return this;
     }
 
@@ -75,9 +92,24 @@ public class Game {
      * @return
      */
     public Game setQuestionMark(int row, int column) {
-        validateCanDoAction();
-        getBoard().setQuestionMark(row, column);
+        validateAndExecute(row, column, board -> board.setQuestionMark(row, column));
         return this;
+    }
+
+    /**
+     * Removes a red flag from a cell
+     * 
+     * @param row
+     * @param column
+     * @return
+     */
+    public Game removeQuestionMark(int row, int column) {
+        validateAndExecute(row, column, board -> board.removeQuestionMark(row, column));
+        return this;
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public Status getStatus() {
@@ -93,7 +125,17 @@ public class Game {
     }
 
     public long getDuration() {
-        return Duration.between(startTime, endTime).getSeconds();
+        LocalDateTime end = (endTime != null ? endTime : LocalDateTime.now());
+        return Duration.between(startTime, end).getSeconds();
+    }
+
+    public GameInfo toGameInfo() {
+        GameInfo gameInfo = new GameInfo();
+        gameInfo.id = this.getId();
+        gameInfo.status = this.getStatus().name();
+        gameInfo.duration = this.getDuration();
+        gameInfo.board = this.board.toBoardInfo();
+        return gameInfo;
     }
 
     protected Clock getClock() {
@@ -119,4 +161,15 @@ public class Game {
         endTime = LocalDateTime.now(getClock());
     }
 
+    /**
+     * Validates the action and executes it
+     * 
+     * @param row
+     * @param column
+     * @param action
+     */
+    private void validateAndExecute(int row, int column, Consumer<Board> action) {
+        validateCanDoAction();
+        action.accept(getBoard());
+    }
 }
