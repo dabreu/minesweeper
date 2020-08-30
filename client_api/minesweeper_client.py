@@ -15,6 +15,7 @@ class Game:
         return self.data['id']
 
     def print(self):
+        print('Id: {}'.format(self.id))
         print('Game: {}'.format(self.data['status']))
         print('Time: {} secs'.format(self.data['duration']))
         board = self.get_printable_board()

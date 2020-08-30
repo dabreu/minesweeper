@@ -17,19 +17,19 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.minesweeper.model.Game.Status;
-import com.minesweeper.repository.IGameRepository;
+import com.minesweeper.repository.GameRepository;
 import com.minesweeper.service.GameInfo;
 import com.minesweeper.service.GameNotFoundException;
 import com.minesweeper.service.GameService;
 
 public class GameServiceTest {
 
-    private IGameRepository repository;
+    private GameRepository repository;
     private GameService service;
 
     @BeforeEach
     public void before() {
-        repository = mock(IGameRepository.class);
+        repository = mock(GameRepository.class);
         service = new GameService(repository);
     }
 
@@ -50,7 +50,7 @@ public class GameServiceTest {
 
     @Test
     public void testGetGameThrowsExceptionIfNotFound() {
-        when(repository.get(any(UUID.class))).thenReturn(Optional.ofNullable(null));
+        when(repository.findById(any(UUID.class))).thenReturn(Optional.ofNullable(null));
         Exception exception = assertThrows(GameNotFoundException.class, () -> {
             service.getGame(UUID.randomUUID());
         });
@@ -60,7 +60,7 @@ public class GameServiceTest {
     @Test
     public void testGetGameReturnsTheGameInfo() {
         Game game = new Game(10, 10, 8);
-        when(repository.get(game.getId())).thenReturn(Optional.of(game));
+        when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         GameInfo gameInfo = service.getGame(game.getId());
         assertEquals(game.getId(), gameInfo.id);
         assertEquals(Status.Started.name(), gameInfo.status);
@@ -69,7 +69,7 @@ public class GameServiceTest {
 
     @Test
     public void testUncoverThrowsExceptionIfNotFound() {
-        when(repository.get(any(UUID.class))).thenReturn(Optional.ofNullable(null));
+        when(repository.findById(any(UUID.class))).thenReturn(Optional.ofNullable(null));
         Exception exception = assertThrows(GameNotFoundException.class, () -> {
             service.uncoverCell(UUID.randomUUID(), 2, 2);
         });
@@ -79,7 +79,7 @@ public class GameServiceTest {
     @Test
     public void testUncoverSavesChanges() {
         Game game = new Game(10, 10, 8);
-        when(repository.get(game.getId())).thenReturn(Optional.of(game));
+        when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         ArgumentCaptor<Game> argCaptor = ArgumentCaptor.forClass(Game.class);
         GameInfo gameInfo = service.uncoverCell(game.getId(), 2, 2);
         verify(repository, times(1)).save(argCaptor.capture());
@@ -88,7 +88,7 @@ public class GameServiceTest {
 
     @Test
     public void testSetRedFlagThrowsExceptionIfNotFound() {
-        when(repository.get(any(UUID.class))).thenReturn(Optional.ofNullable(null));
+        when(repository.findById(any(UUID.class))).thenReturn(Optional.ofNullable(null));
         Exception exception = assertThrows(GameNotFoundException.class, () -> {
             service.setRedFlag(UUID.randomUUID(), 2, 2);
         });
@@ -98,7 +98,7 @@ public class GameServiceTest {
     @Test
     public void testSetRedFlagSavesChanges() {
         Game game = new Game(10, 10, 8);
-        when(repository.get(game.getId())).thenReturn(Optional.of(game));
+        when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         ArgumentCaptor<Game> argCaptor = ArgumentCaptor.forClass(Game.class);
         GameInfo gameInfo = service.setRedFlag(game.getId(), 2, 2);
         verify(repository, times(1)).save(argCaptor.capture());
@@ -107,7 +107,7 @@ public class GameServiceTest {
 
     @Test
     public void testRemoveRedFlagThrowsExceptionIfNotFound() {
-        when(repository.get(any(UUID.class))).thenReturn(Optional.ofNullable(null));
+        when(repository.findById(any(UUID.class))).thenReturn(Optional.ofNullable(null));
         Exception exception = assertThrows(GameNotFoundException.class, () -> {
             service.removeRedFlag(UUID.randomUUID(), 2, 2);
         });
@@ -117,7 +117,7 @@ public class GameServiceTest {
     @Test
     public void testRemoveRedFlagSavesChanges() {
         Game game = new Game(10, 10, 8);
-        when(repository.get(game.getId())).thenReturn(Optional.of(game));
+        when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         ArgumentCaptor<Game> argCaptor = ArgumentCaptor.forClass(Game.class);
         service.setRedFlag(game.getId(), 2, 2);
         GameInfo gameInfo = service.removeRedFlag(game.getId(), 2, 2);
@@ -127,7 +127,7 @@ public class GameServiceTest {
 
     @Test
     public void testSetQuestionMarkThrowsExceptionIfNotFound() {
-        when(repository.get(any(UUID.class))).thenReturn(Optional.ofNullable(null));
+        when(repository.findById(any(UUID.class))).thenReturn(Optional.ofNullable(null));
         Exception exception = assertThrows(GameNotFoundException.class, () -> {
             service.setQuestionMark(UUID.randomUUID(), 2, 2);
         });
@@ -137,7 +137,7 @@ public class GameServiceTest {
     @Test
     public void testSetQuestionMarkSavesChanges() {
         Game game = new Game(10, 10, 8);
-        when(repository.get(game.getId())).thenReturn(Optional.of(game));
+        when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         ArgumentCaptor<Game> argCaptor = ArgumentCaptor.forClass(Game.class);
         GameInfo gameInfo = service.setQuestionMark(game.getId(), 2, 2);
         verify(repository, times(1)).save(argCaptor.capture());
@@ -146,7 +146,7 @@ public class GameServiceTest {
 
     @Test
     public void testRemoveQuestionMarkThrowsExceptionIfNotFound() {
-        when(repository.get(any(UUID.class))).thenReturn(Optional.ofNullable(null));
+        when(repository.findById(any(UUID.class))).thenReturn(Optional.ofNullable(null));
         Exception exception = assertThrows(GameNotFoundException.class, () -> {
             service.removeQuestionMark(UUID.randomUUID(), 2, 2);
         });
@@ -156,7 +156,7 @@ public class GameServiceTest {
     @Test
     public void testRemoveQuestionMarkSavesChanges() {
         Game game = new Game(10, 10, 8);
-        when(repository.get(game.getId())).thenReturn(Optional.of(game));
+        when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         ArgumentCaptor<Game> argCaptor = ArgumentCaptor.forClass(Game.class);
         service.setQuestionMark(game.getId(), 2, 2);
         GameInfo gameInfo = service.removeQuestionMark(game.getId(), 2, 2);

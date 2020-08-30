@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minesweeper.model.Game.Status;
 import com.minesweeper.service.GameInfo;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.data.mongodb.database=test")
 @AutoConfigureMockMvc
 public class GameControllerTest {
 

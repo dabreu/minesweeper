@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import org.springframework.data.annotation.Id;
+
 import com.minesweeper.service.GameInfo;
 
 /**
@@ -19,6 +21,7 @@ public class Game {
         Started, Won, Lost
     }
 
+    @Id
     private UUID id;
 
     /** game's board **/
@@ -32,6 +35,9 @@ public class Game {
 
     /** game's end time **/
     private LocalDateTime endTime;
+
+    public Game() {
+    }
 
     public Game(int rows, int columns, int mines) {
         this.id = UUID.randomUUID();
@@ -172,4 +178,25 @@ public class Game {
         validateCanDoAction();
         action.accept(getBoard());
     }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setBoard(Board board) {
+        this.board = board;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
 }

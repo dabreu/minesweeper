@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import org.springframework.stereotype.Service;
 
 import com.minesweeper.model.Game;
-import com.minesweeper.repository.IGameRepository;
+import com.minesweeper.repository.GameRepository;
 
 /**
  * Implementation of the Game Service
@@ -19,9 +19,9 @@ public class GameService implements IGameService {
     public static int DEFAULT_COLUMNS = 10;
     public static int DEFAULT_MINES = 10;
 
-    private IGameRepository repository;
+    private GameRepository repository;
 
-    public GameService(IGameRepository repository) {
+    public GameService(GameRepository repository) {
         this.repository = repository;
     }
 
@@ -71,7 +71,7 @@ public class GameService implements IGameService {
     }
 
     private Game get(UUID id) {
-        Optional<Game> game = repository.get(id);
+        Optional<Game> game = repository.findById(id);
         return game.orElseThrow(() -> new GameNotFoundException("Game not found: " + id));
     }
 
