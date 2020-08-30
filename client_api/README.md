@@ -44,12 +44,15 @@ remove_question_mark(game, row, column) -> game:
 ```
 
 ## Sample usage of the API
+
+The demo server is deployed on Heroku on http://minesweeper-md.herokuapp.com, then this is the url that must be used when creating a client instance.
+
 ```
 $python3
 ```
 ```
 >>> from minesweeper_client import MinesweeperClient
->>> client = MinesweeperClient('http://localhost:8080')
+>>> client = MinesweeperClient('http://minesweeper-md.herokuapp.com')
 >>> game = client.new_game()
 >>> game.print()
 ```
