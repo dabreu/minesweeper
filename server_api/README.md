@@ -17,3 +17,19 @@ Endpoints for playing the Minesweeper game
 * [Set question on cell](docs/question_mark.md) : `PUT /minesweeper/:gameId/question_mark`
 * [Remove question from cell](docs/question_mark.md) : `DELETE /minesweeper/:gameId/question_mark`
 
+## Demo Server
+
+The demo server is deployed on Heroku on http://minesweeper-md.herokuapp.com. 
+
+The steps to deploy it are:
+
+1. Create a Heroku account
+2. Install the Heroku CLI
+3. Clone the repository
+4. `heroku login` to login to Heroku
+5. `heroku create <app_name>` provide the app name, i.e. minesweeper
+6. `heroku buildpacks:clear` if necessary
+7. `heroku buildpacks:set https://github.com/timanovsky/subdir-heroku-buildpack`
+8. `heroku buildpacks:add heroku/java`
+9. `heroku config:set PROJECT_PATH=server_api` steps 7-9 are required given that the code is present on a subfolder
+10. `git push heroku master` to deploy the code
