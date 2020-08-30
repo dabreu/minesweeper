@@ -5,7 +5,7 @@ from termcolor import colored
 class Game:
     """ Game response class """
 
-    CODES = {'M': "\U0001F4A3", 'F': "\U0001F6A9", 'Q': "\U00002753", 'C': "\U00002B1C"}
+    CODES = {'M': "\U0001F4A3", 'F': "\U0001F6A9", 'Q': "\U00002753", 'C': "-"}
 
     def __init__(self, data):
         self.data = data
