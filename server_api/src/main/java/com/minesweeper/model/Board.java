@@ -132,7 +132,7 @@ public class Board {
     private void doUncover(CellPosition cellPosition) {
         Cell cell = getCell(cellPosition);
         if (cell.hasMine()) {
-            cell.uncover();
+            uncoverAllMines();
             finished = true;
         } else {
             if (cell.isCovered()) {
@@ -147,6 +147,10 @@ public class Board {
             // the board is finished when all cells without mine are uncovered
             finished = areAllCellsWithoutMineUncovered();
         }
+    }
+
+    private void uncoverAllMines() {
+        cells.stream().flatMap(row -> row.stream()).filter(cell -> true).forEach(cell -> cell.uncover());
     }
 
     /**

@@ -17,3 +17,6 @@ dist
 /buildSrc/build
 /buildSrc/out
 .DS_Store
+*/venv
+*/__pycache__
+*/.idea
