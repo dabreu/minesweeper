@@ -1,4 +1,4 @@
-**User login **
+**User Login**
 ----
   REST endpoint to login a user so it can start playing
 
