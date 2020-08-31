@@ -14,6 +14,9 @@ import com.minesweeper.model.BoardException;
 import com.minesweeper.model.CellException;
 import com.minesweeper.model.CellPositionException;
 import com.minesweeper.model.GameException;
+import com.minesweeper.security.InvalidLoginException;
+import com.minesweeper.security.UnauthorizedException;
+import com.minesweeper.security.UserAlreadyExistsException;
 import com.minesweeper.service.GameNotFoundException;
 
 @ControllerAdvice
@@ -52,6 +55,30 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     protected ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
         Map<String, Object> body = createErrorBody(HttpStatus.BAD_REQUEST, ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    protected ResponseEntity<Object> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
+        Map<String, Object> body = createErrorBody(HttpStatus.CONFLICT, ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidLoginException.class)
+    protected ResponseEntity<Object> handleInvalidLoginException(InvalidLoginException ex) {
+        Map<String, Object> body = createErrorBody(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    protected ResponseEntity<Object> handleUnauthorizedException(UnauthorizedException ex) {
+        Map<String, Object> body = createErrorBody(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(Exception.class)
+    protected ResponseEntity<Object> handleException(Exception ex) {
+        Map<String, Object> body = createErrorBody(HttpStatus.BAD_REQUEST, "Server Error");
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 

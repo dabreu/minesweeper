@@ -36,14 +36,18 @@ public class Game {
     /** game's end time **/
     private LocalDateTime endTime;
 
+    /** the user who creates the game **/
+    private String username;
+
     public Game() {
     }
 
-    public Game(int rows, int columns, int mines) {
+    public Game(int rows, int columns, int mines, String username) {
         this.id = UUID.randomUUID();
         this.board = new Board(rows, columns, mines);
         this.status = Status.Started;
         this.startTime = LocalDateTime.now(getClock());
+        this.username = username;
     }
 
     /**
@@ -141,6 +145,7 @@ public class Game {
         gameInfo.status = this.getStatus().name();
         gameInfo.duration = this.getDuration();
         gameInfo.board = this.board.toBoardInfo();
+        gameInfo.username = this.getUsername();
         return gameInfo;
     }
 
@@ -199,4 +204,15 @@ public class Game {
         this.endTime = endTime;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public boolean belongsTo(String username) {
+        return this.username.equals(username);
+    }
 }

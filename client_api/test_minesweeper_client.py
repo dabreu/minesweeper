@@ -19,7 +19,29 @@ def client():
 
 @pytest.fixture
 def headers():
-    return {}
+    return {'Autorization': 'token'}
+
+
+@responses.activate
+def test_registration_throws_error_if_user_exists(client, api_url):
+    responses.add(responses.POST, api_url + "/register", headers={}, status=409)
+    with pytest.raises(MinesweeperClientException):
+        client.register('user', 'password')
+
+
+@responses.activate
+def test_login_throws_error_if_invalid(client, api_url):
+    responses.add(responses.POST, api_url + "/login", headers={}, status=404)
+    with pytest.raises(MinesweeperClientException):
+        client.login('user', 'password')
+
+
+@responses.activate
+def test_on_login_ok_token_is_set(client, api_url):
+    responses.add(responses.POST, api_url + "/login", json={"token": "vNYzDQXvUeNXskYuqqafs42PQpRUp1Ek"}, headers={},
+                  status=200)
+    client.login('user', 'password')
+    assert client._token == "vNYzDQXvUeNXskYuqqafs42PQpRUp1Ek"
 
 
 @responses.activate
@@ -39,6 +61,7 @@ def test_new_game_returns_created_game(client, api_url, headers):
     assert game.data['status'] == status
     assert game.data['board']['cells'] == cells
 
+
 @responses.activate
 def test_new_game_throws_exception_if_status_code_not_ok(client, api_url, headers):
     response = {"error": "error message"}
@@ -46,6 +69,7 @@ def test_new_game_throws_exception_if_status_code_not_ok(client, api_url, header
     with pytest.raises(MinesweeperClientException) as e:
         client.new_game()
     assert str(e.value) == "error message"
+
 
 @responses.activate
 def test_get_game_returns_the_game_if_found(client, api_url, headers):

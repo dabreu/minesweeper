@@ -10,7 +10,10 @@
   
   `POST`
   
-
+* **Header required:**
+  
+  `Autorization: <token>`
+  
 * **Data Params**
 
   **Required:**
@@ -60,8 +63,21 @@
     "error": "invalid columns number: -10"
   }
   ```
+  
+  Or
+  
+  **Code:** 401 UNAUTHORIZED <br />
+  **Content:**
+  
+  ```json
+  {
+    "timestamp": "10:00:16.295",
+    "status": 401,
+    "error": "Game does not belong to user"
+  }
+  ```
 
 * **Sample Call:**
 
-  ```curl -X POST -d rows=8 -d columns=8 -d mines=10 http://localhost:8080/minesweeper```
+  ```curl -X POST -d rows=8 -d columns=8 -d mines=10 -H "Authorization: YhfVcwnkBlurA_6hwZSKSyJDYaDXhjfv" http://localhost:8080/minesweeper```
 

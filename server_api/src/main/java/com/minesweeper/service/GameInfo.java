@@ -8,4 +8,5 @@ public class GameInfo {
     public String status;
     public long duration;
     public BoardInfo board;
+    public String username;
 }

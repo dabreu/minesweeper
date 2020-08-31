@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.minesweeper.model.Game;
 import com.minesweeper.repository.GameRepository;
+import com.minesweeper.security.SecurityContext;
+import com.minesweeper.security.UnauthorizedException;
 
 /**
  * Implementation of the Game Service
@@ -27,7 +29,8 @@ public class GameService implements IGameService {
 
     @Override
     public GameInfo createGame(Integer rows, Integer columns, Integer mines) {
-        Game game = new Game(getParameter(rows, DEFAULT_ROWS), getParameter(columns, DEFAULT_COLUMNS), getParameter(mines, DEFAULT_MINES));
+        String username = SecurityContext.getPrincipal();
+        Game game = new Game(getParameter(rows, DEFAULT_ROWS), getParameter(columns, DEFAULT_COLUMNS), getParameter(mines, DEFAULT_MINES), username);
         save(game);
         return game.toGameInfo();
     }
@@ -72,7 +75,10 @@ public class GameService implements IGameService {
 
     private Game get(UUID id) {
         Optional<Game> game = repository.findById(id);
-        return game.orElseThrow(() -> new GameNotFoundException("Game not found: " + id));
+        if (game.isPresent()) {
+            return getGameIfBelongsToPrincipal(game.get());
+        }
+        throw new GameNotFoundException("Game not found: " + id);
     }
 
     private GameInfo executeAndSave(UUID id, Integer row, Integer column, Consumer<Game> action) {
@@ -80,5 +86,12 @@ public class GameService implements IGameService {
         action.accept(game);
         save(game);
         return game.toGameInfo();
+    }
+
+    private Game getGameIfBelongsToPrincipal(Game game) {
+        if (game.belongsTo(SecurityContext.getPrincipal())) {
+            return game;
+        }
+        throw new UnauthorizedException("Game does not belong to user");
     }
 }

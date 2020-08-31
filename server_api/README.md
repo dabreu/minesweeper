@@ -7,6 +7,12 @@ This document describes the available endpoints on the RESTful API for the Mines
 
 ### Game related
 
+Endpoints for user registration and login to support multiple users/accounts
+
+* [Register new user](docs/register.md) : `POST /minesweeper/register`
+* [Login](docs/login.md) : `POST /minesweeper/login`
+* Logout: *Not yet implemented*
+
 Endpoints for playing the Minesweeper game
 
 * [Start new game](docs/new_game.md) : `POST /minesweeper`
@@ -19,7 +25,7 @@ Endpoints for playing the Minesweeper game
 
 ## Demo Server
 
-The demo server is deployed on Heroku on http://minesweeper-md.herokuapp.com. 
+The demo server is deployed and running on Heroku on *http://minesweeper-md.herokuapp.com*. 
 
 The steps to deploy it are:
 
@@ -33,3 +39,14 @@ The steps to deploy it are:
 8. `heroku buildpacks:add heroku/java`
 9. `heroku config:set PROJECT_PATH=server_api` steps 7-9 are required given that the code is present on a subfolder
 10. `git push heroku master` to deploy the code
+
+
+## Local Server
+
+The steps to build and run the server locally are:
+
+1. Clone the repository
+2. Cd to directory *server_api*
+3. `mvn clean install`
+4. `mvn spring-boot:run` to start the server with Maven or `java -jar target/minesweeper-0.0.1-SNAPSHOT.jar` using java cmd
+5. The server connects by default to MongoDB Atlas. This can be changed on the *application.properties* file to use a local Mongo database

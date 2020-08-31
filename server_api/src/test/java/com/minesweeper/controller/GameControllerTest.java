@@ -1,4 +1,4 @@
-package com.minesweeper.model;
+package com.minesweeper.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -12,6 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,6 +27,9 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minesweeper.model.Game.Status;
+import com.minesweeper.model.User;
+import com.minesweeper.repository.UserRepository;
+import com.minesweeper.security.PasswordAuthenticator;
 import com.minesweeper.service.GameInfo;
 
 @SpringBootTest(properties = "spring.data.mongodb.database=test")
@@ -34,7 +39,25 @@ public class GameControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private UserRepository repository;
+
     private static final ObjectMapper mapper = new ObjectMapper();
+    private static final String PRINCIPAL = "testuser";
+    private static final String PRINCIPAL_PASSWORD = "testuserpassword";
+    private static final String TOKEN = "testtoken";
+
+    @BeforeEach
+    public void createUserWithToken() throws Exception {
+        User user = new User(PRINCIPAL, PasswordAuthenticator.hashPassword(PRINCIPAL_PASSWORD));
+        user.setActiveToken(TOKEN);
+        repository.save(user);
+    }
+
+    @AfterEach
+    public void deleteUser() {
+        repository.deleteAll();
+    }
 
     @Test
     public void testCreateNewGameReturnsTheGameInfo() throws Exception {
@@ -43,15 +66,38 @@ public class GameControllerTest {
     }
 
     @Test
+    public void testCreateNewGameReturns401IfNoToken() throws Exception {
+        mockMvc.perform(post("/minesweeper/").header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+                .andExpect(status().isUnauthorized()).andReturn();
+    }
+
+    @Test
+    public void testCreateNewGameReturns401IfInvalidToken() throws Exception {
+        mockMvc.perform(post("/minesweeper/").header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE).header("Authorization",
+                "invalid")).andExpect(status().isUnauthorized()).andReturn();
+    }
+
+    @Test
     public void testGetGameReturns404IfNotFound() throws Exception {
-        MvcResult result = mockMvc.perform(get("/minesweeper/" + UUID.randomUUID())).andExpect(status().isNotFound()).andReturn();
+        MvcResult result = mockMvc.perform(get("/minesweeper/" + UUID.randomUUID()).header("Authorization", TOKEN)).andExpect(status().isNotFound())
+                .andReturn();
         verifyError(result, HttpStatus.NOT_FOUND, "Game not found");
+    }
+
+    @Test
+    public void testGetGameReturns401IfNoToken() throws Exception {
+        mockMvc.perform(get("/minesweeper/" + UUID.randomUUID())).andExpect(status().isUnauthorized()).andReturn();
+    }
+
+    @Test
+    public void testGetGameReturns401IfInvalidToken() throws Exception {
+        mockMvc.perform(get("/minesweeper/" + UUID.randomUUID()).header("Authorization", "invalid")).andExpect(status().isUnauthorized()).andReturn();
     }
 
     @Test
     public void testGetGameReturnsTheGameInfo() throws Exception {
         UUID gameId = createNewGame().id;
-        MvcResult result = mockMvc.perform(get("/minesweeper/" + gameId)).andExpect(status().isOk()).andReturn();
+        MvcResult result = mockMvc.perform(get("/minesweeper/" + gameId).header("Authorization", TOKEN)).andExpect(status().isOk()).andReturn();
         GameInfo gameInfo = fromJson(result, GameInfo.class);
         assertNotNull(gameInfo);
         assertEquals(gameId, gameInfo.id);
@@ -135,7 +181,8 @@ public class GameControllerTest {
     }
 
     private GameInfo createNewGame() throws Exception {
-        MvcResult result = mockMvc.perform(post("/minesweeper/").header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+        MvcResult result = mockMvc.perform(
+                post("/minesweeper/").header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE).header("Authorization", TOKEN))
                 .andExpect(status().isOk()).andReturn();
         return fromJson(result, GameInfo.class);
     }
@@ -146,13 +193,13 @@ public class GameControllerTest {
 
     private ResultActions doPutActionOnCell(String action, UUID id, int row, int column) throws Exception {
         return mockMvc.perform(put("/minesweeper/" + id + "/" + action).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .param("row", String.valueOf(row)).param("column", String.valueOf(column)));
+                .header("Authorization", TOKEN).param("row", String.valueOf(row)).param("column", String.valueOf(column)));
     }
 
     private ResultActions doDeleteActionOnCell(String action, UUID id, int row, int column) throws Exception {
         return mockMvc
                 .perform(delete("/minesweeper/" + id + "/" + action).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                        .param("row", String.valueOf(row)).param("column", String.valueOf(column)));
+                        .header("Authorization", TOKEN).param("row", String.valueOf(row)).param("column", String.valueOf(column)));
     }
 
     @SuppressWarnings("unchecked")

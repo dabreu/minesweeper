@@ -20,6 +20,12 @@ The client API provides the following methods to play a Minesweeper game
 # Instantiates the client to connect to the Game server (serverl_url)
 MinesweeperClient(server_url)
 
+# Registers a new user
+register(username, password)
+
+# Registered user login, which creates a new session. This is a required step before start playing.
+login(username, password) 
+
 # Start a new game
 new_game(rows=10, columns=10, mines=10)-> game:
 
@@ -53,6 +59,8 @@ $python3
 ```
 >>> from minesweeper_client import MinesweeperClient
 >>> client = MinesweeperClient('http://minesweeper-md.herokuapp.com')
+>>> client.register("user", "password")  # user registration needs to be done only once
+>>> client.login("user", "password")
 >>> game = client.new_game()
 >>> game.print()
 ```

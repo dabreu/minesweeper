@@ -9,7 +9,10 @@
 * **Method:**
   
   `PUT`
+
+* **Header required:**
   
+  `Autorization: <token>`  
 
 * **Data Params**
 
@@ -67,8 +70,21 @@
     "error": "Game not found"
   }
   ```
+  
+  Or
+  
+  **Code:** 401 UNAUTHORIZED <br />
+  **Content:**
+  
+  ```json
+  {
+    "timestamp": "10:00:16.295",
+    "status": 401,
+    "error": "Game does not belong to user"
+  }
+  ```
 
 * **Sample Call:**
 
-  ```curl -X PUT -d row=1 -d column=2 http://localhost:8080/minesweeper/8439d287-2d61-4dd5-92c6-c487e9ceb4e7/uncover```
+  ```curl -X PUT -d row=1 -d column=2 -H "Authorization: YhfVcwnkBlurA_6hwZSKSyJDYaDXhjfv" http://localhost:8080/minesweeper/8439d287-2d61-4dd5-92c6-c487e9ceb4e7/uncover```
 

@@ -1,4 +1,4 @@
-package com.minesweeper.model;
+package com.minesweeper.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,11 +16,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.minesweeper.model.Game;
 import com.minesweeper.model.Game.Status;
 import com.minesweeper.repository.GameRepository;
-import com.minesweeper.service.GameInfo;
-import com.minesweeper.service.GameNotFoundException;
-import com.minesweeper.service.GameService;
+import com.minesweeper.security.SecurityContext;
+import com.minesweeper.security.UnauthorizedException;
 
 public class GameServiceTest {
 
@@ -31,6 +31,7 @@ public class GameServiceTest {
     public void before() {
         repository = mock(GameRepository.class);
         service = new GameService(repository);
+        SecurityContext.setPrincipal("user");
     }
 
     @Test
@@ -49,6 +50,13 @@ public class GameServiceTest {
     }
 
     @Test
+    public void testCreateNewGameAssociatesThePrincipalToTheGame() {
+        SecurityContext.setPrincipal("testprincipal");
+        GameInfo gameInfo = service.createGame(10, 10, 8);
+        assertEquals("testprincipal", gameInfo.username);
+    }
+
+    @Test
     public void testGetGameThrowsExceptionIfNotFound() {
         when(repository.findById(any(UUID.class))).thenReturn(Optional.ofNullable(null));
         Exception exception = assertThrows(GameNotFoundException.class, () -> {
@@ -58,8 +66,19 @@ public class GameServiceTest {
     }
 
     @Test
+    public void testGetGameThrowsExceptionIfNotAuthorizedUser() {
+        SecurityContext.setPrincipal("anotheruser");
+        Game game = new Game(10, 10, 8, "user");
+        when(repository.findById(game.getId())).thenReturn(Optional.of(game));
+        Exception exception = assertThrows(UnauthorizedException.class, () -> {
+            service.getGame(game.getId());
+        });
+        assertTrue(exception.getMessage().contains("Game does not belong to user"));
+    }
+
+    @Test
     public void testGetGameReturnsTheGameInfo() {
-        Game game = new Game(10, 10, 8);
+        Game game = new Game(10, 10, 8, "user");
         when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         GameInfo gameInfo = service.getGame(game.getId());
         assertEquals(game.getId(), gameInfo.id);
@@ -78,7 +97,7 @@ public class GameServiceTest {
 
     @Test
     public void testUncoverSavesChanges() {
-        Game game = new Game(10, 10, 8);
+        Game game = new Game(10, 10, 8, "user");
         when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         ArgumentCaptor<Game> argCaptor = ArgumentCaptor.forClass(Game.class);
         GameInfo gameInfo = service.uncoverCell(game.getId(), 2, 2);
@@ -97,7 +116,7 @@ public class GameServiceTest {
 
     @Test
     public void testSetRedFlagSavesChanges() {
-        Game game = new Game(10, 10, 8);
+        Game game = new Game(10, 10, 8, "user");
         when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         ArgumentCaptor<Game> argCaptor = ArgumentCaptor.forClass(Game.class);
         GameInfo gameInfo = service.setRedFlag(game.getId(), 2, 2);
@@ -116,7 +135,7 @@ public class GameServiceTest {
 
     @Test
     public void testRemoveRedFlagSavesChanges() {
-        Game game = new Game(10, 10, 8);
+        Game game = new Game(10, 10, 8, "user");
         when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         ArgumentCaptor<Game> argCaptor = ArgumentCaptor.forClass(Game.class);
         service.setRedFlag(game.getId(), 2, 2);
@@ -136,7 +155,7 @@ public class GameServiceTest {
 
     @Test
     public void testSetQuestionMarkSavesChanges() {
-        Game game = new Game(10, 10, 8);
+        Game game = new Game(10, 10, 8, "user");
         when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         ArgumentCaptor<Game> argCaptor = ArgumentCaptor.forClass(Game.class);
         GameInfo gameInfo = service.setQuestionMark(game.getId(), 2, 2);
@@ -155,7 +174,7 @@ public class GameServiceTest {
 
     @Test
     public void testRemoveQuestionMarkSavesChanges() {
-        Game game = new Game(10, 10, 8);
+        Game game = new Game(10, 10, 8, "user");
         when(repository.findById(game.getId())).thenReturn(Optional.of(game));
         ArgumentCaptor<Game> argCaptor = ArgumentCaptor.forClass(Game.class);
         service.setQuestionMark(game.getId(), 2, 2);

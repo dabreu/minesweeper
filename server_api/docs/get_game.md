@@ -10,7 +10,10 @@
   
   `GET`
   
-
+* **Header required:**
+  
+  `Autorization: <token>`
+  
 * **Success Response:**
   
   The game information will be returned, including its id, status, duration (in secs) and board
@@ -56,7 +59,20 @@
   }
   ```
 
+  Or
+  
+  **Code:** 401 UNAUTHORIZED <br />
+  **Content:**
+  
+  ```json
+  {
+    "timestamp": "10:00:16.295",
+    "status": 401,
+    "error": "Game does not belong to user"
+  }
+  ```
+  
 * **Sample Call:**
 
-  ```curl -X GET http://localhost:8080/minesweeper/8439d287-2d61-4dd5-92c6-c487e9ceb4e7```
+  ```curl -X GET -H "Authorization: YhfVcwnkBlurA_6hwZSKSyJDYaDXhjfv" http://localhost:8080/minesweeper/8439d287-2d61-4dd5-92c6-c487e9ceb4e7```
 
