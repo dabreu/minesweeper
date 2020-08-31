@@ -4,9 +4,6 @@ This document describes the available endpoints on the RESTful API for the Mines
 
 ## Endpoints
 
-
-### Game related
-
 Endpoints for user registration and login to support multiple users/accounts
 
 * [Register new user](docs/register.md) : `POST /minesweeper/register`
